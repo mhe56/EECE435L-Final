@@ -1,6 +1,4 @@
 from flask import Flask, request, jsonify
-from routes.review_routes import review_routes
-from routes.admin_routes import admin_routes
 from database import create_tables, create_review, update_review, delete_review, get_product_reviews, get_customer_reviews, get_review_details
 
 def create_app():
