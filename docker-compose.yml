@@ -1,0 +1,55 @@
+services:
+  service1:
+    build:
+      context: ./service1
+    container_name: service1_container
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./service1:/app
+      - shared_db:/app/db
+    environment:
+      - FLASK_APP=service1.py  # Specify the Flask application
+    command: flask run --host=0.0.0.0 --port=5000
+
+  service2:
+    build:
+      context: ./service2
+    container_name: service2_container
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./service2:/app
+      - shared_db:/app/db
+    environment:
+      - FLASK_APP=service2.py  # Specify the Flask application
+    command: flask run --host=0.0.0.0 --port=5001
+
+  service3:
+    build:
+      context: ./service3
+    container_name: service3_container
+    ports:
+      - "5002:5002"
+    volumes:
+      - ./service3:/app
+      - shared_db:/app/db
+    environment:
+      - FLASK_APP=service3.py  # Specify the Flask application
+    command: flask run --host=0.0.0.0 --port=5002
+
+  service4:
+    build:
+      context: ./service4
+    container_name: service4_container
+    ports:
+      - "5003:5003"
+    volumes:
+      - ./service4:/app
+      - shared_db:/app/db
+    environment:
+      - FLASK_APP=service4.py  # Specify the Flask application
+    command: flask run --host=0.0.0.0 --port=5003
+
+volumes:
+  shared_db:
