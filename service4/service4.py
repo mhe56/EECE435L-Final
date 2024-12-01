@@ -31,15 +31,23 @@ def token_required(f):
         token = request.headers.get('Authorization')
         if not token:
             return jsonify({'error': 'Token is missing!'}), 403
-        
+
+        # Handle "Bearer " prefix if present
+        if token.startswith("Bearer "):
+            token = token[7:]  # Remove "Bearer " from token
+
         try:
             data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
             current_user = data['username']
-        except:
-            return jsonify({'error': 'Token is invalid!'}), 403
+            print(f"Token decoded successfully for user: {current_user}")
+        except jwt.ExpiredSignatureError:
+            return jsonify({'error': 'Token has expired!'}), 403
+        except jwt.InvalidTokenError as e:
+            return jsonify({'error': f'Token is invalid: {str(e)}'}), 403
 
         return f(current_user, *args, **kwargs)
     return decorated
+
 
 
 @app.route('/reviews', methods=['POST'])
