@@ -67,7 +67,7 @@ def login_customer():
         token = jwt.encode(
             {
                 'username': username,
-                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+                 'exp': datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(hours=1)
             },
             SECRET_KEY,
             algorithm='HS256'
