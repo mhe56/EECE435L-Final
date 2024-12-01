@@ -9,6 +9,33 @@ def test_client():
     with app.test_client() as client:
         yield client
 
+@pytest.fixture(scope='module')
+def auth_token(test_client):
+    # Register a new user to generate a token
+    test_client.post('/customers/register',
+                     data=json.dumps({
+                         "username": "token_user",
+                         "full_name": "Token User",
+                         "password": "password123",
+                         "age": 25,
+                         "address": "123 Token St",
+                         "gender": "Female",
+                         "marital_status": "Single"
+                     }),
+                     content_type='application/json')
+
+    # Login with the registered user to get the JWT token
+    response = test_client.post('/customers/login',
+                                data=json.dumps({
+                                    "username": "token_user",
+                                    "password": "password123"
+                                }),
+                                content_type='application/json')
+
+    assert response.status_code == 200
+    token = response.json['token']
+    return token
+
 
 def test_register_customer_success(test_client):
     response = test_client.post('/customers/register',
@@ -118,37 +145,38 @@ def test_remove_customer_not_found(test_client):
     assert response.json == {"error": "Customer not found."}
 
 
-def test_charge_wallet_success(test_client):
-    # Register a new customer to test wallet operations
-    test_client.post('/customers/register',
-                     data=json.dumps({
-                         "username": "wallet_user",
-                         "full_name": "Wallet User",
-                         "password": "password123",
-                         "age": 30,
-                         "address": "123 Wallet St",
-                         "gender": "Female",
-                         "marital_status": "Single"
-                     }),
-                     content_type='application/json')
-    response = test_client.post('/customers/wallet_user/charge',
+def test_charge_wallet_success(test_client, auth_token):
+    # Charge wallet for a user using the JWT token
+    headers = {
+        'Authorization': f'Bearer {auth_token}',
+        'Content-Type': 'application/json'
+    }
+    response = test_client.post('/customers/token_user/charge',
                                 data=json.dumps({"amount": 50.0}),
-                                content_type='application/json')
+                                headers=headers)
     assert response.status_code == 200
     assert response.json == {"message": "Wallet charged successfully."}
 
 
-def test_deduct_wallet_success(test_client):
-    response = test_client.post('/customers/wallet_user/deduct',
+def test_deduct_wallet_success(test_client, auth_token):
+    headers = {
+        'Authorization': f'Bearer {auth_token}',
+        'Content-Type': 'application/json'
+    }
+    response = test_client.post('/customers/token_user/deduct',
                                 data=json.dumps({"amount": 20.0}),
-                                content_type='application/json')
+                                headers=headers)
     assert response.status_code == 200
     assert response.json == {"message": "Wallet deduction successful."}
 
 
-def test_deduct_wallet_insufficient_balance(test_client):
-    response = test_client.post('/customers/wallet_user/deduct',
+def test_deduct_wallet_insufficient_balance(test_client, auth_token):
+    headers = {
+        'Authorization': f'Bearer {auth_token}',
+        'Content-Type': 'application/json'
+    }
+    response = test_client.post('/customers/token_user/deduct',
                                 data=json.dumps({"amount": 1000.0}),
-                                content_type='application/json')
+                                headers=headers)
     assert response.status_code == 400
     assert response.json == {"error": "Insufficient balance."}

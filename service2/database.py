@@ -149,6 +149,9 @@ def verify_customer_password(conn, username, password):
         result = cursor.fetchone()
         if result:
             stored_password = result[0]
+            # Convert stored_password from string to bytes if it's not already bytes
+            if isinstance(stored_password, str):
+                stored_password = stored_password.encode('utf-8')
             # Compare the stored hashed password with the provided password
             return bcrypt.checkpw(password.encode('utf-8'), stored_password)
         else:
@@ -156,6 +159,7 @@ def verify_customer_password(conn, username, password):
     except Error as e:
         print(f"Error: {e}")
         return False
+
 
 
 
