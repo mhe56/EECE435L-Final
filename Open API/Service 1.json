@@ -1,0 +1,401 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eCommerce Service 1 API",
+    "version": "1.0.0",
+    "description": "API documentation for managing customers, including registration, login, and wallet operations."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5000",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/customers/register": {
+      "post": {
+        "summary": "Register a new customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "johndoe123"
+                  },
+                  "full_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  },
+                  "age": {
+                    "type": "integer",
+                    "example": 30
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "123 Main St, City, Country"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "example": "Male"
+                  },
+                  "marital_status": {
+                    "type": "string",
+                    "example": "Single"
+                  },
+                  "wallet_balance": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 0
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Customer registered successfully"
+          },
+          "400": {
+            "description": "Missing required fields or username already exists"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/customers/login": {
+      "post": {
+        "summary": "Login a customer",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "johndoe123"
+                  },
+                  "password": {
+                    "type": "string",
+                    "example": "password123"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "token": {
+                      "type": "string",
+                      "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing username or password"
+          },
+          "401": {
+            "description": "Invalid credentials"
+          }
+        }
+      }
+    },
+    "/customers/{username}": {
+      "delete": {
+        "summary": "Delete a customer by username",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer deleted successfully"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      },
+      "put": {
+        "summary": "Update customer information",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string",
+                    "example": "John Doe"
+                  },
+                  "age": {
+                    "type": "integer",
+                    "example": 31
+                  },
+                  "address": {
+                    "type": "string",
+                    "example": "456 New St, City, Country"
+                  },
+                  "gender": {
+                    "type": "string",
+                    "example": "Male"
+                  },
+                  "marital_status": {
+                    "type": "string",
+                    "example": "Married"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Customer information updated successfully"
+          },
+          "400": {
+            "description": "No fields to update"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get customer details by username",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Customer details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe123"
+                    },
+                    "full_name": {
+                      "type": "string",
+                      "example": "John Doe"
+                    },
+                    "age": {
+                      "type": "integer",
+                      "example": 30
+                    },
+                    "address": {
+                      "type": "string",
+                      "example": "123 Main St, City, Country"
+                    },
+                    "gender": {
+                      "type": "string",
+                      "example": "Male"
+                    },
+                    "marital_status": {
+                      "type": "string",
+                      "example": "Single"
+                    },
+                    "wallet_balance": {
+                      "type": "number",
+                      "format": "float",
+                      "example": 50
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    },
+    "/customers": {
+      "get": {
+        "summary": "Get list of all customers",
+        "responses": {
+          "200": {
+            "description": "List of all customers retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "example": "johndoe123"
+                      },
+                      "full_name": {
+                        "type": "string",
+                        "example": "John Doe"
+                      },
+                      "age": {
+                        "type": "integer",
+                        "example": 30
+                      },
+                      "address": {
+                        "type": "string",
+                        "example": "123 Main St, City, Country"
+                      },
+                      "gender": {
+                        "type": "string",
+                        "example": "Male"
+                      },
+                      "marital_status": {
+                        "type": "string",
+                        "example": "Single"
+                      },
+                      "wallet_balance": {
+                        "type": "number",
+                        "format": "float",
+                        "example": 50
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/customers/{username}/charge": {
+      "post": {
+        "summary": "Charge a customer's wallet",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 100
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet charged successfully"
+          },
+          "400": {
+            "description": "Invalid amount"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    },
+    "/customers/{username}/deduct": {
+      "post": {
+        "summary": "Deduct money from a customer's wallet",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "amount": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 50
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Wallet deduction successful"
+          },
+          "400": {
+            "description": "Invalid amount or insufficient balance"
+          },
+          "404": {
+            "description": "Customer not found"
+          }
+        }
+      }
+    }
+  }
+}

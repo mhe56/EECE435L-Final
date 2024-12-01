@@ -1,0 +1,338 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eCommerce Service 4 API",
+    "version": "1.0.0",
+    "description": "API documentation for managing product reviews, including submission, updating, deletion, and retrieval."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5003",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/reviews": {
+      "post": {
+        "summary": "Submit a new review",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_id": {
+                    "type": "integer",
+                    "example": 1
+                  },
+                  "rating": {
+                    "type": "integer",
+                    "example": 4
+                  },
+                  "comment": {
+                    "type": "string",
+                    "example": "Great product!"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Review submitted successfully"
+          },
+          "400": {
+            "description": "Validation error"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/reviews/{review_id}": {
+      "put": {
+        "summary": "Update an existing review",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "rating": {
+                    "type": "integer",
+                    "example": 5
+                  },
+                  "comment": {
+                    "type": "string",
+                    "example": "Updated comment on the product"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Review updated successfully"
+          },
+          "400": {
+            "description": "No fields to update"
+          },
+          "404": {
+            "description": "Review not found"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a review by review ID",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review deleted successfully"
+          },
+          "404": {
+            "description": "Review not found"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      },
+      "get": {
+        "summary": "Get review details by review ID",
+        "parameters": [
+          {
+            "name": "review_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Review details retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "review_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "product_id": {
+                      "type": "integer",
+                      "example": 1
+                    },
+                    "username": {
+                      "type": "string",
+                      "example": "johndoe123"
+                    },
+                    "rating": {
+                      "type": "integer",
+                      "example": 5
+                    },
+                    "comment": {
+                      "type": "string",
+                      "example": "Excellent product!"
+                    },
+                    "created_at": {
+                      "type": "string",
+                      "example": "2024-01-01T12:00:00Z"
+                    },
+                    "updated_at": {
+                      "type": "string",
+                      "example": "2024-01-02T12:00:00Z"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Review not found"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/reviews/product/{product_id}": {
+      "get": {
+        "summary": "Get all reviews for a specific product",
+        "parameters": [
+          {
+            "name": "product_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews for the product retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "review_id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "username": {
+                        "type": "string",
+                        "example": "johndoe123"
+                      },
+                      "rating": {
+                        "type": "integer",
+                        "example": 4
+                      },
+                      "comment": {
+                        "type": "string",
+                        "example": "Great product!"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "example": "2024-01-01T12:00:00Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "example": "2024-01-02T12:00:00Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No reviews found for this product"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/reviews/customer/{username}": {
+      "get": {
+        "summary": "Get all reviews by a specific customer",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of reviews by the customer retrieved successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "review_id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "product_id": {
+                        "type": "integer",
+                        "example": 1
+                      },
+                      "rating": {
+                        "type": "integer",
+                        "example": 4
+                      },
+                      "comment": {
+                        "type": "string",
+                        "example": "Great product!"
+                      },
+                      "created_at": {
+                        "type": "string",
+                        "example": "2024-01-01T12:00:00Z"
+                      },
+                      "updated_at": {
+                        "type": "string",
+                        "example": "2024-01-02T12:00:00Z"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No reviews found for this customer"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}

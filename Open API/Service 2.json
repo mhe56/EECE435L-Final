@@ -1,0 +1,152 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eCommerce Service 2 API",
+    "version": "1.0.0",
+    "description": "API documentation for managing inventory items, including adding, updating, and deducting stock."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5001",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/inventory/add": {
+      "post": {
+        "summary": "Add a new item to the inventory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Laptop"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Electronics"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 1000
+                  },
+                  "description": {
+                    "type": "string",
+                    "example": "High-end gaming laptop"
+                  },
+                  "count_in_stock": {
+                    "type": "integer",
+                    "example": 50
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Item added to inventory successfully"
+          },
+          "400": {
+            "description": "Missing required fields"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/inventory/update": {
+      "put": {
+        "summary": "Update an existing item in the inventory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Laptop"
+                  },
+                  "category": {
+                    "type": "string",
+                    "example": "Electronics"
+                  },
+                  "price": {
+                    "type": "number",
+                    "format": "float",
+                    "example": 1200
+                  },
+                  "count_in_stock": {
+                    "type": "integer",
+                    "example": 45
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item updated successfully"
+          },
+          "400": {
+            "description": "Missing item name or no fields to update"
+          },
+          "404": {
+            "description": "Item not found"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    },
+    "/inventory/deduct": {
+      "post": {
+        "summary": "Deduct item stock from the inventory",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "example": "Laptop"
+                  },
+                  "count": {
+                    "type": "integer",
+                    "example": 5
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Item stock deducted successfully"
+          },
+          "400": {
+            "description": "Missing required fields or invalid count"
+          },
+          "404": {
+            "description": "Item not found or insufficient stock"
+          },
+          "500": {
+            "description": "Database error occurred"
+          }
+        }
+      }
+    }
+  }
+}

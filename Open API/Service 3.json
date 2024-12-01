@@ -1,0 +1,89 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "eCommerce Service 3 API",
+    "version": "1.0.0",
+    "description": "API documentation for managing sales transactions, including creating a sale and calculating shipping costs."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:5002",
+      "description": "Local server"
+    }
+  ],
+  "paths": {
+    "/sales": {
+      "post": {
+        "summary": "Create a new sale",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "example": "sale_user"
+                  },
+                  "item_name": {
+                    "type": "string",
+                    "example": "Laptop"
+                  },
+                  "quantity": {
+                    "type": "integer",
+                    "example": 2
+                  },
+                  "destination": {
+                    "type": "string",
+                    "example": "international"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Sale completed successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string",
+                      "example": "Sale completed successfully."
+                    },
+                    "payment_intent_client_secret": {
+                      "type": "string",
+                      "example": "pi_1Fhe123456789secret_abc"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Missing required fields, invalid quantity, insufficient wallet balance, or not enough items in stock"
+          },
+          "404": {
+            "description": "Customer or item not found"
+          },
+          "500": {
+            "description": "Database or Stripe payment error occurred"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
