@@ -1,7 +1,12 @@
 from flask import Flask, request, jsonify
 from database import create_connection, create_tables, create_review, update_review, delete_review, get_product_reviews, get_customer_reviews, get_review_details
 import sqlite3
+import jwt
+from functools import wraps
+from cerberus import Validator
+
 app = Flask(__name__)
+SECRET_KEY = "c817b68d03f44e70a635c4e1f7692b67c99d7a4b7b1a9e46d67e682a2e738c9b"
 database = "ecommerce.db"
 
 def initialize_database():
@@ -12,17 +17,46 @@ def initialize_database():
     else:
         print("Error: Unable to connect to the database.")
 
-@app.route('/reviews', methods=['POST'])
-def submit_review():
-    data = request.get_json()
-    required_fields = ['product_id', 'username', 'rating']
-    if not all(field in data for field in required_fields):
-        return jsonify({"error": "Missing required fields."}), 400
+# Review validation schema        
+review_schema = {
+    'product_id': {'type': 'integer', 'required': True, 'min': 1},
+    'rating': {'type': 'integer', 'required': True, 'min': 1, 'max': 5},
+    'comment': {'type': 'string', 'maxlength': 500, 'nullable': True}
+}
 
-    comment = data.get('comment', "")
+def token_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        token = request.headers.get('Authorization')
+        if not token:
+            return jsonify({'error': 'Token is missing!'}), 403
+        
+        try:
+            data = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            current_user = data['username']
+        except:
+            return jsonify({'error': 'Token is invalid!'}), 403
+
+        return f(current_user, *args, **kwargs)
+    return decorated
+
+
+@app.route('/reviews', methods=['POST'])
+@token_required
+def submit_review(current_user):
+    data = request.get_json()
+
+    # Validate input data
+    v = Validator(review_schema)
+    if not v.validate(data):
+        return jsonify({"error": v.errors}), 400
+
+    # Sanitize the comment field to prevent XSS
+    comment = re.sub(r'[<>]', '', data.get('comment', ""))
+
     conn = create_connection(database)
     try:
-        create_review(conn, data['product_id'], data['username'], data['rating'], comment)
+        create_review(conn, data['product_id'], current_user, data['rating'], comment)
         return jsonify({"message": "Review submitted successfully."}), 201
     except sqlite3.Error as e:
         return jsonify({"error": str(e)}), 500
@@ -31,7 +65,8 @@ def submit_review():
             conn.close()
 
 @app.route('/reviews/<int:review_id>', methods=['PUT'])
-def update_review_route(review_id):
+@token_required
+def update_review_route(current_user, review_id):
     data = request.get_json()
     if not data:
         return jsonify({"error": "No fields to update."}), 400
@@ -49,7 +84,8 @@ def update_review_route(review_id):
             conn.close()
 
 @app.route('/reviews/<int:review_id>', methods=['DELETE'])
-def delete_review_route(review_id):
+@token_required
+def delete_review_route(current_user, review_id):
     conn = create_connection(database)
     try:
         delete_review(conn, review_id)
