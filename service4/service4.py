@@ -4,6 +4,7 @@ import sqlite3
 import jwt
 from functools import wraps
 from cerberus import Validator
+import re
 
 app = Flask(__name__)
 SECRET_KEY = "c817b68d03f44e70a635c4e1f7692b67c99d7a4b7b1a9e46d67e682a2e738c9b"
