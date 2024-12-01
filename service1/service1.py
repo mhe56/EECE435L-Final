@@ -1,8 +1,11 @@
 import sqlite3
 from flask import Flask, request, jsonify
-from database import create_connection, create_tables, add_customer, update_customer, delete_customer, get_customer, get_all_customers, update_wallet
+from database import create_connection, create_tables, add_customer, update_customer, delete_customer, get_customer, get_all_customers, update_wallet, verify_customer_password  
+import jwt
+import datetime
 
 app = Flask(__name__)
+SECRET_KEY = "c817b68d03f44e70a635c4e1f7692b67c99d7a4b7b1a9e46d67e682a2e738c9b"
 database = "ecommerce.db"
 
 def initialize_database():
@@ -50,7 +53,28 @@ def register_customer():
         if conn:
             conn.close()
 
+@app.route('/customers/login', methods=['POST'])
+def login_customer():
+    data = request.get_json()
+    username = data.get('username')
+    password = data.get('password')
+    
+    if not username or not password:
+        return jsonify({"error": "Missing username or password."}), 400
 
+    conn = create_connection(database)
+    if verify_customer_password(conn, username, password):
+        token = jwt.encode(
+            {
+                'username': username,
+                'exp': datetime.datetime.utcnow() + datetime.timedelta(hours=1)
+            },
+            SECRET_KEY,
+            algorithm='HS256'
+        )
+        return jsonify({'token': token}), 200
+    else:
+        return jsonify({"error": "Invalid credentials."}), 401
 
 
 @app.route('/customers/<username>', methods=['DELETE'])

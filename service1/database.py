@@ -1,4 +1,5 @@
 import sqlite3
+import bcrypt
 from sqlite3 import Error
 
 
@@ -97,7 +98,6 @@ def create_tables(conn):
         print(f"Error: {e}")
 
 
-# Functions for Service 1 - Customers
 def add_customer(conn, customer):
     """
     Add a new customer to the customers table
@@ -112,13 +112,55 @@ def add_customer(conn, customer):
             print("Error: Username already exists.")
             return
 
+        # Hash the password before storing it
+        hashed_password = bcrypt.hashpw(customer[2].encode('utf-8'), bcrypt.gensalt())
+
         sql = ''' INSERT INTO customers(username, full_name, password, age, address, gender, marital_status, wallet_balance)
                   VALUES(?,?,?,?,?,?,?,?) '''
-        cursor.execute(sql, customer)
+        # Replace plain text password with hashed password
+        customer_data = (
+            customer[0],  # username
+            customer[1],  # full_name
+            hashed_password,  # hashed password
+            customer[3],  # age
+            customer[4],  # address
+            customer[5],  # gender
+            customer[6],  # marital_status
+            customer[7],  # wallet_balance
+        )
+        cursor.execute(sql, customer_data)
         conn.commit()
         print("Customer added successfully.")
     except Error as e:
         print(f"Error: {e}")
+
+def verify_customer_password(conn, username, password):
+    """
+    Verify customer's password
+    :param conn: Connection object
+    :param username: customer's username
+    :param password: plain text password to verify
+    :return: True if the password matches, False otherwise
+    """
+    try:
+        sql = ''' SELECT password FROM customers WHERE username = ? '''
+        cursor = conn.cursor()
+        cursor.execute(sql, (username,))
+        result = cursor.fetchone()
+        if result:
+            stored_password = result[0]
+            # Convert stored_password from string to bytes if it's not already bytes
+            if isinstance(stored_password, str):
+                stored_password = stored_password.encode('utf-8')
+            # Compare the stored hashed password with the provided password
+            return bcrypt.checkpw(password.encode('utf-8'), stored_password)
+        else:
+            return False
+    except Error as e:
+        print(f"Error: {e}")
+        return False
+
+
 
 
 def update_customer(conn, username, updates):
@@ -443,6 +485,7 @@ def create_review(conn, product_id, username, rating, comment):
     """
     try:
         cursor = conn.cursor()
+        # Parameterized query to avoid SQL injection
         cursor.execute('''
             INSERT INTO reviews (product_id, username, rating, comment)
             VALUES (?, ?, ?, ?)
