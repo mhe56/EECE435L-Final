@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import sqlite3
 from database import create_connection, add_item, add_customer, create_tables, add_sale, get_sales_by_customer, get_all_sales, get_available_goods, get_good_details, get_item_details_by_name, update_customer_wallet, update_inventory_stock
+from ScalabilityReliability.Producer import trigger_send_message
 
 app = Flask(__name__)
 database = "ecommerce.db"
@@ -62,7 +63,8 @@ def create_sale():
         # Record the sale
         sale = (username, item_name, quantity, total_price)
         add_sale(conn, sale)
-
+        #here
+        trigger_send_message(username)#automated asynchronus messaging using RabbitMQ after a sale
         return jsonify({"message": "Sale completed successfully."}), 201
     except sqlite3.Error as e:
         return jsonify({"error": "Database error occurred."}), 500

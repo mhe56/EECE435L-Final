@@ -25,6 +25,19 @@ def create_tables(conn):
     try:
         cursor = conn.cursor()
 
+        # Creating messages table
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS messages (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                sender_id TEXT NOT NULL,
+                receiver_id TEXT NOT NULL,
+                message_content TEXT NOT NULL,
+                timestamp TEXT DEFAULT CURRENT_TIMESTAMP
+            );
+
+
+        ''')
+
         # Creating Customers table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS customers ( 

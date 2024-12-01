@@ -2,54 +2,79 @@ services:
   service1:
     build:
       context: ./service1
-    container_name: service1_container
     ports:
-      - "5000:5000"
+      - "5000"  # Docker will automatically assign a dynamic port
     volumes:
       - ./service1:/app
       - shared_db:/app/db
     environment:
-      - FLASK_APP=service1.py  # Specify the Flask application
+      - FLASK_APP=service1.py
     command: flask run --host=0.0.0.0 --port=5000
+    deploy:
+      replicas: 3
 
   service2:
     build:
       context: ./service2
-    container_name: service2_container
     ports:
-      - "5001:5001"
+      - "5001"  # Docker will automatically assign a dynamic port
     volumes:
       - ./service2:/app
       - shared_db:/app/db
     environment:
-      - FLASK_APP=service2.py  # Specify the Flask application
+      - FLASK_APP=service2.py
     command: flask run --host=0.0.0.0 --port=5001
+    deploy:
+      replicas: 3
 
   service3:
     build:
       context: ./service3
-    container_name: service3_container
     ports:
-      - "5002:5002"
+      - "5002"  # Docker will automatically assign a dynamic port
     volumes:
       - ./service3:/app
       - shared_db:/app/db
     environment:
-      - FLASK_APP=service3.py  # Specify the Flask application
+      - FLASK_APP=service3.py
     command: flask run --host=0.0.0.0 --port=5002
+    deploy:
+      replicas: 3
 
   service4:
     build:
       context: ./service4
-    container_name: service4_container
     ports:
-      - "5003:5003"
+      - "5003"  # Docker will automatically assign a dynamic port
     volumes:
       - ./service4:/app
       - shared_db:/app/db
     environment:
-      - FLASK_APP=service4.py  # Specify the Flask application
+      - FLASK_APP=service4.py
     command: flask run --host=0.0.0.0 --port=5003
+    deploy:
+      replicas: 3
+
+  scalability:
+    build:
+      context: ./ScalabilityReliability  # Corrected path to the ScalabilityReliability folder
+    ports:
+      - "5004"  # Docker will automatically assign a dynamic port
+    volumes:
+      - ./ScalabilityReliability:/ScalabilityReliability  # Mount the ScalabilityReliability folder
+    environment:
+      - FLASK_APP=Producer.py  # Set your Flask app for the scalability service
+    command: flask run --host=0.0.0.0 --port=5004
+    deploy:
+      replicas: 3
+
+  rabbitmq:
+    image: rabbitmq:management
+    hostname: rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
 
 volumes:
   shared_db:
+#for scalability we added the option to deploy more replicas of every module

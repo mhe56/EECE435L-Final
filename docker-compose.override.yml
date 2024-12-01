@@ -1,0 +1,16 @@
+services:
+  service1:
+    deploy:
+      replicas: 3
+
+  service2:
+    deploy:
+      replicas: 2
+
+  service3:
+    deploy:
+      replicas: 2
+
+  service4:
+    deploy:
+      replicas: 2
