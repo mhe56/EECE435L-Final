@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 import sqlite3
-from database import create_connection, create_tables, add_item, update_item, deduct_item_stock
+from database import create_connection, create_tables, add_item, update_item, deduct_item_stock, get_available_goods
 
 app = Flask(__name__)
 database = "ecommerce.db"
@@ -82,6 +82,10 @@ def deduct_inventory_item():
             conn.close()
     return jsonify({"message": "Item stock deducted successfully."}), 200
 
+@app.route('/inventory', methods=['GET'])
+def getallinv():
+    conn = create_connection(database)
+    return get_available_goods(conn)
 
 if __name__ == '__main__':
     initialize_database()

@@ -13,8 +13,9 @@ def test_client():
 def test_create_sale_success(test_client):
     response = test_client.post('/sales', json={
         "username": "sale_user",
-        "item_name": "Laptop",
-        "quantity": 2
+        "item_name": "testitem",
+        "quantity": 2,
+        "destination":"international"
     })
     assert response.status_code == 201
     assert response.json == {"message": "Sale completed successfully."}
@@ -23,7 +24,8 @@ def test_create_sale_item_not_found(test_client):
     response = test_client.post('/sales', json={
         "username": "sale_user",
         "item_name": "NonExistentItem",
-        "quantity": 1
+        "quantity": 1,
+        "destination":"international"
     })
     assert response.status_code == 404
     assert response.json == {"error": "Item not found."}
@@ -32,7 +34,8 @@ def test_create_sale_customer_not_found(test_client):
     response = test_client.post('/sales', json={
         "username": "non_existent_user",
         "item_name": "Laptop",
-        "quantity": 1
+        "quantity": 1,
+        "destination":"international"
     })
     assert response.status_code == 404
     assert response.json == {"error": "Customer not found."}
@@ -41,7 +44,8 @@ def test_create_sale_insufficient_stock(test_client):
     response = test_client.post('/sales', json={
         "username": "sale_user",
         "item_name": "Laptop",
-        "quantity": 20
+        "quantity": 20,
+        "destination":"international"
     })
     assert response.status_code == 400
     assert response.json == {"error": "Not enough items in stock."}
@@ -50,7 +54,8 @@ def test_create_sale_insufficient_balance(test_client):
     response = test_client.post('/sales', json={
         "username": "sale_user",
         "item_name": "Laptop",
-        "quantity": 3
+        "quantity": 3,
+        "destination":"international"
     })
     assert response.status_code == 400
     assert response.json == {"error": "Insufficient wallet balance."}

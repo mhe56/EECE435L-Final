@@ -73,11 +73,14 @@ def create_tables(conn):
                 item_name TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
                 total_price REAL NOT NULL,
+                shipping_cost REAL NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (username) REFERENCES customers(username),
                 FOREIGN KEY (item_name) REFERENCES inventory(name)
             );
         ''')
-        
+
+      
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 review_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -374,19 +377,24 @@ def get_good_details(conn, item_name):
 # Functions for Service 3 - Sales
 def add_sale(conn, sale):
     """
-    Add a new sale to the sales table
+    Add a new sale to the sales table.
     :param conn: Connection object
-    :param sale: tuple containing sale details (username, item_name, quantity, total_price, sale_date)
+    :param sale: tuple containing sale details (username, item_name, quantity, total_price, shipping_cost)
     """
     try:
         cursor = conn.cursor()
-        sql = ''' INSERT INTO sales(username, item_name, quantity, total_price, sale_date)
-                  VALUES(?,?,?,?,?) '''
+        sql = ''' 
+            INSERT INTO sales (username, item_name, quantity, total_price, shipping_cost)
+            VALUES (?, ?, ?, ?, ?) 
+        '''
         cursor.execute(sql, sale)
-        conn.commit()
+        conn.commit()  # Commit the transaction
         print("Sale recorded successfully.")
     except Error as e:
         print(f"Error: {e}")
+        conn.rollback()  # Rollback in case of error
+
+
 
 
 def get_sales_by_customer(conn, username):
