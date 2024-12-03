@@ -148,7 +148,7 @@ def get_sales_by_customer_route(username):
         if conn:
             conn.close()
 
-@app.route('/sales', methods=['GET'])
+@app.route('/saleslist', methods=['GET'])
 def get_all_sales_route():
     conn = create_connection(database)
     try:

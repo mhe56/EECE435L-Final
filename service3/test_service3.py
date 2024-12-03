@@ -71,7 +71,7 @@ def test_get_customer_sales_not_found(test_client):
     assert response.json == {"message": "No sales found for this customer."}
 
 def test_list_all_sales(test_client):
-    response = test_client.get('/sales')
+    response = test_client.get('/saleslist')
     assert response.status_code == 200
     assert len(response.json) > 0
 

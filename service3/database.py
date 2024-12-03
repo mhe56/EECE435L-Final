@@ -373,7 +373,8 @@ def get_good_details(conn, item_name):
         print(f"Error: {e}")
         return None
 
-
+def test():
+    return
 # Functions for Service 3 - Sales
 def add_sale(conn, sale):
     """
@@ -604,6 +605,10 @@ def get_review_details(conn, review_id):
 if __name__ == "__main__":
     database = "ecommerce.db"
     conn = create_connection(database)
+    sale = (
+        "sale_user","Laptop",1,999.99,10.0)
+    add_sale(conn, sale)
+
     if conn is not None:
         create_tables(conn)
         conn.close()

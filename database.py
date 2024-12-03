@@ -1,4 +1,5 @@
 import sqlite3
+import bcrypt
 from sqlite3 import Error
 
 
@@ -24,7 +25,7 @@ def create_tables(conn):
     """
     try:
         cursor = conn.cursor()
-
+        
         # Creating messages table
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS messages (
@@ -40,16 +41,15 @@ def create_tables(conn):
 
         # Creating Customers table
         cursor.execute('''
-            CREATE TABLE IF NOT EXISTS customers (
-                username TEXT PRIMARY KEY,
-                customer_id INTEGER AUTOINCREMENT,
-                full_name TEXT NOT NULL,
-                password TEXT NOT NULL,
-                age INTEGER NOT NULL,
-                address TEXT,
-                gender TEXT,
-                marital_status TEXT,
-                wallet_balance REAL DEFAULT 0.0
+            CREATE TABLE IF NOT EXISTS customers ( 
+                username TEXT PRIMARY KEY,  
+                full_name TEXT NOT NULL, 
+                password TEXT NOT NULL, 
+                age INTEGER NOT NULL, 
+                address TEXT, 
+                gender TEXT, 
+                marital_status TEXT, 
+                wallet_balance REAL DEFAULT 0.0 
             );
         ''')
 
@@ -63,7 +63,9 @@ def create_tables(conn):
                 description TEXT,
                 count_in_stock INTEGER NOT NULL
             );
-        ''')
+        ''')    
+
+
 
         # Creating Sales table
         cursor.execute('''
@@ -73,22 +75,25 @@ def create_tables(conn):
                 item_name TEXT NOT NULL,
                 quantity INTEGER NOT NULL,
                 total_price REAL NOT NULL,
+                shipping_cost REAL NOT NULL,
+                timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (username) REFERENCES customers(username),
                 FOREIGN KEY (item_name) REFERENCES inventory(name)
             );
         ''')
-        
+
+      
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS reviews (
                 review_id INTEGER PRIMARY KEY AUTOINCREMENT,
                 product_id INTEGER NOT NULL,
-                user_id INTEGER NOT NULL,
+                username TEXT NOT NULL,
                 rating INTEGER NOT NULL,
                 comment TEXT,
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                 FOREIGN KEY (product_id) REFERENCES inventory(item_id),
-                FOREIGN KEY (user_id) REFERENCES customers(customer_id)
+                FOREIGN KEY (username) REFERENCES customers(username)
             );
         """)
 
@@ -98,7 +103,6 @@ def create_tables(conn):
         print(f"Error: {e}")
 
 
-# Functions for Service 1 - Customers
 def add_customer(conn, customer):
     """
     Add a new customer to the customers table
@@ -113,13 +117,55 @@ def add_customer(conn, customer):
             print("Error: Username already exists.")
             return
 
+        # Hash the password before storing it
+        hashed_password = bcrypt.hashpw(customer[2].encode('utf-8'), bcrypt.gensalt())
+
         sql = ''' INSERT INTO customers(username, full_name, password, age, address, gender, marital_status, wallet_balance)
                   VALUES(?,?,?,?,?,?,?,?) '''
-        cursor.execute(sql, customer)
+        # Replace plain text password with hashed password
+        customer_data = (
+            customer[0],  # username
+            customer[1],  # full_name
+            hashed_password,  # hashed password
+            customer[3],  # age
+            customer[4],  # address
+            customer[5],  # gender
+            customer[6],  # marital_status
+            customer[7],  # wallet_balance
+        )
+        cursor.execute(sql, customer_data)
         conn.commit()
         print("Customer added successfully.")
     except Error as e:
         print(f"Error: {e}")
+
+def verify_customer_password(conn, username, password):
+    """
+    Verify customer's password
+    :param conn: Connection object
+    :param username: customer's username
+    :param password: plain text password to verify
+    :return: True if the password matches, False otherwise
+    """
+    try:
+        sql = ''' SELECT password FROM customers WHERE username = ? '''
+        cursor = conn.cursor()
+        cursor.execute(sql, (username,))
+        result = cursor.fetchone()
+        if result:
+            stored_password = result[0]
+            # Convert stored_password from string to bytes if it's not already bytes
+            if isinstance(stored_password, str):
+                stored_password = stored_password.encode('utf-8')
+            # Compare the stored hashed password with the provided password
+            return bcrypt.checkpw(password.encode('utf-8'), stored_password)
+        else:
+            return False
+    except Error as e:
+        print(f"Error: {e}")
+        return False
+
+
 
 
 def update_customer(conn, username, updates):
@@ -329,23 +375,29 @@ def get_good_details(conn, item_name):
         print(f"Error: {e}")
         return None
 
-
+def test():
+    return
 # Functions for Service 3 - Sales
 def add_sale(conn, sale):
     """
-    Add a new sale to the sales table
+    Add a new sale to the sales table.
     :param conn: Connection object
-    :param sale: tuple containing sale details (username, item_name, quantity, total_price, sale_date)
+    :param sale: tuple containing sale details (username, item_name, quantity, total_price, shipping_cost)
     """
     try:
         cursor = conn.cursor()
-        sql = ''' INSERT INTO sales(username, item_name, quantity, total_price, sale_date)
-                  VALUES(?,?,?,?,?) '''
+        sql = ''' 
+            INSERT INTO sales (username, item_name, quantity, total_price, shipping_cost)
+            VALUES (?, ?, ?, ?, ?) 
+        '''
         cursor.execute(sql, sale)
-        conn.commit()
+        conn.commit()  # Commit the transaction
         print("Sale recorded successfully.")
     except Error as e:
         print(f"Error: {e}")
+        conn.rollback()  # Rollback in case of error
+
+
 
 
 def get_sales_by_customer(conn, username):
@@ -433,24 +485,25 @@ def update_inventory_stock(conn, item_name, quantity):
         print(f"Error: {e}")
 
 # Functions for Service 4 - Reviews
-def create_review(conn, product_id, user_id, rating, comment):
+def create_review(conn, product_id, username, rating, comment):
     """
     Create a new review for a product
     :param conn: Connection object
     :param product_id: ID of the product
-    :param user_id: ID of the user
+    :param username: Username of the user
     :param rating: Rating given by the user
     :param comment: Comment by the user
     """
     try:
         cursor = conn.cursor()
+        # Parameterized query to avoid SQL injection
         cursor.execute('''
-            INSERT INTO reviews (product_id, user_id, rating, comment)
+            INSERT INTO reviews (product_id, username, rating, comment)
             VALUES (?, ?, ?, ?)
-        ''', (product_id, user_id, rating, comment))
+        ''', (product_id, username, rating, comment))
         conn.commit()
         print("Review created successfully.")
-    except Error as e:
+    except sqlite3.Error as e:
         print(f"Error: {e}")
 
 
@@ -511,21 +564,21 @@ def get_product_reviews(conn, product_id):
         return []
 
 
-def get_customer_reviews(conn, user_id):
+def get_customer_reviews(conn, username):
     """
     Get all reviews made by a specific customer
     :param conn: Connection object
-    :param user_id: ID of the user
+    :param username: Customer's username
     :return: List of reviews
     """
     try:
         cursor = conn.cursor()
         cursor.execute('''
-            SELECT * FROM reviews WHERE user_id = ?
-        ''', (user_id,))
+            SELECT * FROM reviews WHERE username = ?
+        ''', (username,))
         reviews = cursor.fetchall()
         return reviews
-    except Error as e:
+    except sqlite3.Error as e:
         print(f"Error: {e}")
         return []
 
@@ -554,6 +607,10 @@ def get_review_details(conn, review_id):
 if __name__ == "__main__":
     database = "ecommerce.db"
     conn = create_connection(database)
+    sale = (
+        "sale_user","Laptop",1,999.99,10.0)
+    add_sale(conn, sale)
+
     if conn is not None:
         create_tables(conn)
         conn.close()
